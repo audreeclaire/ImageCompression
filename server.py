@@ -78,8 +78,16 @@ def insertBLOB(name,photo):
                 conn.close()
                 print("connection closed")
 
+def makeDirectory():
+    try:
+        #os.makedir('./retrievedImages')
+        os.makedirs('retrievedImages')
+    except:
+        print("Error fetching images.")
+
 def compress():
     #recover photos from database and zip
+    makeDirectory()
     readBlobData()
     shutil.make_archive('./my_photos', 'zip',"./retrievedImages")
 
