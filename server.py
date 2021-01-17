@@ -1,5 +1,4 @@
 from flask import Flask, Response, render_template, request, redirect, url_for
-from base64 import b64encode
 from werkzeug.utils import secure_filename
 import os
 import sys
