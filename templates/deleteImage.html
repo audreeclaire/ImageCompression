@@ -1,0 +1,37 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>Image Repository</title>
+   		<meta charset=utf-8>
+	</head>
+    <body>
+        <h1>Image Repository</h1>
+        <form action="/">
+            <input type="submit" value="Go Back" />
+        </form>
+		<br>
+        <br>
+		<b>Select an image to delete from your collection below or click "Clear All" to remove all images.</b>
+		
+		<br>
+		<form action="" method="POST">
+    			<input type="submit" name="delete" value="Clear All">
+		</form>
+		<br>
+		
+		<table>
+		{% for photo in photos %}
+		<tr>
+    		<td><form action="" method="POST">
+    			<input type="submit" name="delete" value={{photo[0]}}>
+				</form>
+			</td>
+		</td>
+		{% endfor %}
+        <br>
+        <br>
+       
+
+    </body>
+ </html>

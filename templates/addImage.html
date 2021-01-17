@@ -1,0 +1,34 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>Image Repository</title>
+   		<meta charset=utf-8>
+	</head>
+    <body>
+        <h1>Image Repository</h1>
+        <form action="/">
+            <input type="submit" value="Go Back" />
+        </form>
+        <br>
+        <br>
+        <b>Add a new image to your collection below.</b>
+    		
+   			<form method="POST" action="" enctype="multipart/form-data">
+  				<label for="files">Select files:</label>
+  				<input type="file" id="files" name="addedimages" multiple><br><br>
+  				<input type="submit" name="submit" value="Submit">
+			</form>
+  	    
+		<br>
+		<br>
+			<table>
+			{% for photo in photos %}
+			<tr>
+				<td>{{photo[0]}}</td>
+			</td>
+			{% endfor %}
+		
+	
+    </body>
+</html>
