@@ -6,9 +6,41 @@ import numpy as np
 import sqlite3
 from PIL import Image
 import shutil
+from functools import wraps
+
+key=27
 
 app = Flask(__name__)
 app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png']
+
+def check_auth(username, password):
+    """This function is called to check if a username /
+    password combination is valid.
+    """
+    return username == 'admin' and password == 'shopify'
+
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return Response(
+    'You must verify your credentials to access this feature.\n'
+    'Go back and try again.', 401,
+    {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
+
+def encryption(image):
+    image = bytearray(image)
+    for index, values in enumerate(image): 
+        image[index] = values ^ key 
+    return image
+
 
 def writeTofile(data, filename):
     #convert binary data back to image and save it
@@ -33,6 +65,9 @@ def readBlobData():
 
             print("Storing photo on disk \n")
             retrievedImagesPath = "./retrievedImages/" + name
+            
+            #DECRYPT
+            photo = encryption(photo)
             writeTofile(photo, retrievedImagesPath)
 
         cursor.close()
@@ -61,7 +96,8 @@ def insertBLOB(name,photo):
         
         
         newImage = convertToBinaryData(photo)
-        #convertToBinaryData(photo)
+        #ENCRYPT
+        newImage = encryption(newImage)
         
         data_tuple = (name,(newImage))
         cursor.execute(sqlite_insert_blob_query, data_tuple)
@@ -79,7 +115,6 @@ def insertBLOB(name,photo):
 
 def makeDirectory():
     try:
-        #os.makedir('./retrievedImages')
         os.makedirs('retrievedImages')
     except:
         print("Error fetching images.")
@@ -89,6 +124,7 @@ def compress():
     makeDirectory()
     readBlobData()
     shutil.make_archive('./my_photos', 'zip',"./retrievedImages")
+    shutil.rmtree('./retrievedImages')
 
 
 
@@ -108,12 +144,14 @@ def index():
 
 #HOME - COMPRESS BTN
 @app.route('/', methods=['POST'])
+@requires_auth
 def index_page(): 
     compress()
     return redirect(url_for('index'))
     
 #ADD PAGE
 @app.route('/addImage/')
+@requires_auth
 def addImagePage():   
     try:
         conn = sqlite3.connect('images.db')
@@ -142,10 +180,13 @@ def add_to_collection():
             file.save(file.filename, optimize = True, quality = 20)
        
             insertBLOB(file.filename, file.filename)
+            #delete source file
+            os.remove(file.filename)
             
     return redirect(url_for('addImagePage'))    
     
 @app.route('/deleteImage/')
+@requires_auth
 def deleteImagePage():
     try:
         conn = sqlite3.connect('images.db')
